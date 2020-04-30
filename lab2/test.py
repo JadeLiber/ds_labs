@@ -109,10 +109,7 @@ class VHIApp(spyre.server.App):
         last_week =int( params['last_week'])
         index = params ['index']
         df = self.df
-        df['year'] = df['year'].astype(str)
-        df['province'] = df['province'].astype(str)
         df = df[(df.year==year)&(df.province == province)]
-        df['week'] = df['week'].astype(int)
         df = df[(df.week>=first_week)& (df.week<=last_week)]   
         return df[['year','week',index]]
      
