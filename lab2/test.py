@@ -74,7 +74,7 @@ class VHIApp(spyre.server.App):
     outputs = [
         {
             "type": "plot",
-            "id": "plot",
+            "id": "first_plot",
             "control_id": "update_data",
             "tab": "Plot",
             "on_page_load": True
@@ -84,18 +84,24 @@ class VHIApp(spyre.server.App):
             "id": "mean_table",
             "control_id": "update_data",
             "tab": "Table"
+            
         }
         ]
     def __init__(self):
-        df = pd.DataFrame(columns=['year','week', 'SMN','SMT','VCI','TCI','VHI','province'])
         colnames=['year','week', 'SMN','SMT','VCI','TCI','VHI','province']
+        df = pd.DataFrame(columns=colnames)
         for i in range (1, 28):
             file_name = f"data\_id_{i}.csv"
             temp = pd.read_csv(file_name, sep=",", names = colnames, index_col=False, header=None)
             temp['province']=i
             temp = temp[temp.VHI!=-1]
             df = df.append(temp, ignore_index=True)
+        df['year']=df['year'].astype(str)
+        df['province']=df['province'].astype(str)
+        df['week'] = df['week'].astype(int)
         self.df = df
+
+
     def getData(self, params):      
         province = params['province']
         year = params['year']
@@ -116,7 +122,6 @@ class VHIApp(spyre.server.App):
         df1 = df[[index]]
         return df1.set_index(df['week']).plot()
 
-    
 
 app = VHIApp()
 app.launch(port = 2020)
