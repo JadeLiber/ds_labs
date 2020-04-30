@@ -60,7 +60,8 @@ class VHIApp(spyre.server.App):
                   "label": "last week",
                   'key': 'last_week',
                   'value': '52'
-                  }]
+                  }
+                ]
 
     controls = [
         {
@@ -69,7 +70,7 @@ class VHIApp(spyre.server.App):
             "label": "Show data"
         }]
 
-    tabs = ["Plot", "Table"]
+    tabs = ["Plot", "Table", "table1"]
 
     outputs = [
         {
@@ -85,6 +86,19 @@ class VHIApp(spyre.server.App):
             "control_id": "update_data",
             "tab": "Table"
             
+        },
+        {
+            "type": "table",
+            "id": "min_max_table",
+            "control_id": "update_data",
+            "tab": "table1"
+        },
+        {
+             "type": "plot",
+            "id": "sec_plot",
+            "control_id": "update_data",
+            "tab": "Plot",
+            "on_page_load": True
         }
         ]
     def __init__(self):
@@ -101,8 +115,23 @@ class VHIApp(spyre.server.App):
         df['week'] = df['week'].astype(int)
         self.df = df
 
-
-    def getData(self, params):      
+    def min_max_table(self, params):
+        province = params['province']
+        index = params['index']
+        first_week = int(params['first_week'])
+        last_week =int( params['last_week'])
+        df = self.df
+        #df1 = pd.DataFrame(columns = ['week', 'max_VHI', 'min_VHI'])
+        #print (df1)
+        
+        df1 = (df.groupby(['week'])['VHI'].max())
+        df2 = (df.groupby(['week'])['VHI'].min())
+        df3 = (df.groupby(['week'])['VHI'].mean())
+        df2 = pd.DataFrame({'max':df1, 'min':df2, 'mean':df3})
+        print(df1)
+        return df2
+      
+    def mean_table(self, params):      
         province = params['province']
         year = params['year']
         first_week = int(params['first_week'])
@@ -113,12 +142,17 @@ class VHIApp(spyre.server.App):
         df = df[(df.week>=first_week)& (df.week<=last_week)]   
         return df[['year','week',index]]
      
-    def getPlot(self, params):
+    def sec_plot(self, params):
+        df =  self.min_max_table(params)
+        return df.plot()
+
+    def first_plot(self, params):
         index = params['index']
-        df = self.getData(params) 
+        df = self.mean_table(params) 
         df1 = df[[index]]
         return df1.set_index(df['week']).plot()
 
 
 app = VHIApp()
 app.launch(port = 2020)
+
